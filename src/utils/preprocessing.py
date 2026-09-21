@@ -22,11 +22,22 @@ def preprocess_drawing(image: np.ndarray | Image.Image, is_emnist: bool = False)
     """
     if isinstance(image, Image.Image):
         # Convert PIL to numpy array
-        img = np.array(image.convert("L"))
+        if image.mode == 'RGBA':
+            # Extract alpha channel if RGBA (drawing is usually in alpha for transparent backgrounds)
+            img = np.array(image)[:, :, 3]
+        else:
+            img = np.array(image.convert("L"))
     else:
-        # Assume it's an OpenCV image
+        # Assume it's an OpenCV/Numpy image
         if len(image.shape) == 3:
-            img = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+            if image.shape[2] == 4:
+                # RGBA image from Gradio - use alpha channel
+                img = image[:, :, 3]
+            elif image.shape[2] == 3:
+                # RGB/BGR image
+                img = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
+            else:
+                img = image[:, :, 0]
         else:
             img = image.copy()
 

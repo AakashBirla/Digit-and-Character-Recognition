@@ -93,12 +93,24 @@ def predict(image, model_name):
     if image is None:
         return "Please draw something first!"
     
+    print(f"Received image type: {type(image)}")
+    
     # Gradio sketchpad returns a dict with 'composite' key containing the RGBA image
     if isinstance(image, dict):
-        img_array = image["composite"]
+        print(f"Image keys: {image.keys()}")
+        if "composite" in image:
+            img_array = image["composite"]
+        elif "background" in image and "layers" in image:
+            # Fallback for some Gradio versions
+            img_array = image["layers"][0] if image["layers"] else image["background"]
+        else:
+            # Grab whatever looks like a numpy array
+            img_array = next(iter(image.values()))
     else:
         img_array = image
         
+    print(f"Final img_array shape: {img_array.shape}, dtype: {img_array.dtype}")
+    
     # Check if empty drawing (all transparent or white)
     import numpy as np
     if np.sum(img_array) == 0 or np.all(img_array == 255):
@@ -154,6 +166,8 @@ def create_app():
                 canvas = gr.Sketchpad(
                     label="Draw Here",
                     type="numpy",
+                    height=500,
+                    width=500,
                     layers=False,
                     brush=gr.Brush(colors=["#FFFFFF"])
                 )
