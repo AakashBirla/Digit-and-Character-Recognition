@@ -14,7 +14,7 @@ A complete handwritten digit and character recognition system built from scratch
 - ✅ MLP baseline classifier with training pipeline
 - ✅ Training/validation loops with checkpointing
 - ✅ CNN digit and character classifier
-- 🔲 Full training pipeline with metrics (Stage 4)
+- ✅ Full training pipeline with evaluation metrics
 - 🔲 Real-time drawing interface (Stage 5)
 
 ## Project Structure
@@ -40,6 +40,8 @@ digit-character-recognition/
 │   │   └── validate.py          # Validation loop
 │   │
 │   ├── evaluation/              # Evaluation metrics (Stage 4+)
+│   │   └── metrics.py           # Classification reports & CM
+│   │
 │   ├── inference/               # Prediction pipeline (Stage 5)
 │   │
 │   └── utils/                   # Utility modules
@@ -57,6 +59,7 @@ digit-character-recognition/
 ├── explore_data.py              # Stage 1: Data exploration script
 ├── train_mlp.py                 # Stage 2: MLP training script
 ├── train_cnn.py                 # Stage 3: CNN training script
+├── evaluate.py                  # Stage 4: Evaluation script
 ├── requirements.txt             # Python dependencies
 ├── .gitignore                   # Git ignore rules
 ├── LICENSE                      # MIT License
@@ -241,6 +244,24 @@ python train_cnn.py --dataset emnist --epochs 5 --batch-size 64 --lr 0.001
 - Max pooling provides translation invariance
 - Hierarchical feature learning (edges -> shapes -> digits/chars)
 
+## Stage 4: Training Pipeline and Evaluation Metrics
+
+### How to Run Evaluation
+
+```bash
+# Evaluate CNN on MNIST
+python evaluate.py --model cnn --dataset mnist --checkpoint checkpoints/mnist_cnn_best.pth
+
+# Evaluate CNN on EMNIST
+python evaluate.py --model cnn --dataset emnist --checkpoint checkpoints/emnist_cnn_best.pth
+```
+
+### Evaluation Output
+
+The evaluation pipeline loads a trained model from a checkpoint and runs inference on the respective test set. It computes and saves the following metrics:
+- **Classification Report**: Precision, recall, and F1-score for each class (saved to `results/metrics/`)
+- **Confusion Matrix**: A heatmap visualization of true vs. predicted labels (saved to `results/figures/`)
+
 ## Project Evolution
 
 | Stage | Description | Status |
@@ -248,7 +269,7 @@ python train_cnn.py --dataset emnist --epochs 5 --batch-size 64 --lr 0.001
 | **Stage 1** | MNIST/EMNIST data pipeline and visualization | ✅ Complete |
 | **Stage 2** | MLP baseline classifier | ✅ Complete |
 | **Stage 3** | CNN digit and character classifier | ✅ Complete |
-| **Stage 4** | Training pipeline and evaluation metrics | 🔲 Pending |
+| **Stage 4** | Training pipeline and evaluation metrics | ✅ Complete |
 | **Stage 5** | Real-time drawing recognition app | 🔲 Pending |
 
 ## Technology Stack
