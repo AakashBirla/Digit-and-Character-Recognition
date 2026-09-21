@@ -13,7 +13,7 @@ A complete handwritten digit and character recognition system built from scratch
 - ✅ Automatic GPU/MPS/CPU device detection
 - ✅ MLP baseline classifier with training pipeline
 - ✅ Training/validation loops with checkpointing
-- 🔲 CNN classifier (Stage 3)
+- ✅ CNN digit and character classifier
 - 🔲 Full training pipeline with metrics (Stage 4)
 - 🔲 Real-time drawing interface (Stage 5)
 
@@ -26,7 +26,9 @@ digit-character-recognition/
 │   └── README.md                # Dataset documentation
 │
 ├── models/                      # Neural network architectures
-│   └── __init__.py
+│   ├── __init__.py
+│   ├── mlp.py                   # MLP baseline model
+│   └── cnn.py                   # CNN classifier model
 │
 ├── src/                         # Source code
 │   ├── data/                    # Data loading modules
@@ -34,6 +36,9 @@ digit-character-recognition/
 │   │   └── emnist_loader.py     # EMNIST dataset pipeline
 │   │
 │   ├── training/                # Training modules (Stage 2+)
+│   │   ├── train.py             # Generic training loop
+│   │   └── validate.py          # Validation loop
+│   │
 │   ├── evaluation/              # Evaluation metrics (Stage 4+)
 │   ├── inference/               # Prediction pipeline (Stage 5)
 │   │
@@ -50,6 +55,8 @@ digit-character-recognition/
 │   └── metrics/                 # Experiment results
 │
 ├── explore_data.py              # Stage 1: Data exploration script
+├── train_mlp.py                 # Stage 2: MLP training script
+├── train_cnn.py                 # Stage 3: CNN training script
 ├── requirements.txt             # Python dependencies
 ├── .gitignore                   # Git ignore rules
 ├── LICENSE                      # MIT License
@@ -187,13 +194,60 @@ The MLP is a **baseline** — it has inherent limitations for image data:
 
 **CNNs (Stage 3) address these limitations** by using convolutional filters that exploit spatial structure, weight sharing, and local connectivity.
 
+## Stage 3: CNN Digit and Character Classifier
+
+### CNN Architecture
+
+```text
+Input (1×28×28)
+     ↓
+Conv2D (1 → 32, 3×3) → ReLU → MaxPool (2×2)
+     ↓
+Conv2D (32 → 64, 3×3) → ReLU → MaxPool (2×2)
+     ↓
+Flatten (3136)
+     ↓
+Linear(3136, 128) → ReLU → Dropout(0.3)
+     ↓
+Linear(128, num_classes)
+```
+
+- **Parameters**: ~421K trainable
+- **Loss**: CrossEntropyLoss
+- **Optimizer**: Adam (lr=0.001)
+- Supports configurable `num_classes` (10 for MNIST, 47 for EMNIST)
+
+### How to Run
+
+```bash
+# Train CNN on MNIST (5 epochs)
+python train_cnn.py --dataset mnist --epochs 5 --batch-size 64 --lr 0.001
+
+# Train CNN on EMNIST (5 epochs)
+python train_cnn.py --dataset emnist --epochs 5 --batch-size 64 --lr 0.001
+```
+
+### Results
+
+| Metric | MNIST | EMNIST (Balanced) |
+|---|---|---|
+| Best Val Accuracy | 99.25% | 87.41% |
+| Best Epoch | 5 / 5 | 5 / 5 |
+| Training Time | 23.9s | 52.6s |
+
+### CNN Advantages over MLP
+- Exploits 2D spatial structure via convolutional filters
+- Weight sharing reduces parameters and improves generalization
+- Max pooling provides translation invariance
+- Hierarchical feature learning (edges -> shapes -> digits/chars)
+
 ## Project Evolution
 
 | Stage | Description | Status |
 |---|---|---|
 | **Stage 1** | MNIST/EMNIST data pipeline and visualization | ✅ Complete |
 | **Stage 2** | MLP baseline classifier | ✅ Complete |
-| **Stage 3** | CNN digit and character classifier | 🔲 Pending |
+| **Stage 3** | CNN digit and character classifier | ✅ Complete |
 | **Stage 4** | Training pipeline and evaluation metrics | 🔲 Pending |
 | **Stage 5** | Real-time drawing recognition app | 🔲 Pending |
 

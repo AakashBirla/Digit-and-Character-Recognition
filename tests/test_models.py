@@ -15,6 +15,7 @@ project_root = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(project_root))
 
 from models.mlp import MLP
+from models.cnn import CNN
 
 
 class TestMLPInitialization:
@@ -140,3 +141,94 @@ class TestMLPTrainingStep:
         final_loss = criterion(output, labels).item()
         assert final_loss < initial_loss, \
             f"Loss didn't decrease: {initial_loss:.4f} → {final_loss:.4f}"
+
+class TestCNNInitialization:
+    """Test CNN model initialization."""
+
+    def test_default_initialization(self):
+        model = CNN(num_classes=10)
+        assert model is not None
+        assert model.num_classes == 10
+
+    def test_custom_num_classes(self):
+        model = CNN(num_classes=47)
+        assert model.num_classes == 47
+
+    def test_parameter_count(self):
+        model = CNN(num_classes=10)
+        count = model.count_parameters()
+        assert count > 0
+        # Expected params:
+        # Conv1: 32 * 1 * 3 * 3 + 32 = 320
+        # Conv2: 64 * 32 * 3 * 3 + 64 = 18,496
+        # FC1: 128 * 3136 + 128 = 401,536
+        # FC2: 10 * 128 + 10 = 1,290
+        # Total: ~421,642
+        assert 400000 < count < 450000
+
+
+class TestCNNForwardPass:
+    """Test CNN forward pass and output shapes."""
+
+    def test_forward_4d_input(self):
+        """Test with standard image tensor (batch, C, H, W)."""
+        model = CNN(num_classes=10)
+        x = torch.randn(32, 1, 28, 28)
+        output = model(x)
+        assert output.shape == (32, 10)
+
+    def test_forward_single_sample(self):
+        """Test with a single sample."""
+        model = CNN(num_classes=10)
+        x = torch.randn(1, 1, 28, 28)
+        output = model(x)
+        assert output.shape == (1, 10)
+
+    def test_forward_emnist_classes(self):
+        """Test with EMNIST number of classes (47)."""
+        model = CNN(num_classes=47)
+        x = torch.randn(8, 1, 28, 28)
+        output = model(x)
+        assert output.shape == (8, 47)
+
+    def test_output_not_nan(self):
+        model = CNN(num_classes=10)
+        x = torch.randn(4, 1, 28, 28)
+        output = model(x)
+        assert not torch.isnan(output).any()
+
+
+class TestCNNTrainingStep:
+    """Test a single training step with the CNN."""
+
+    def test_loss_calculation(self):
+        model = CNN(num_classes=10)
+        criterion = nn.CrossEntropyLoss()
+        x = torch.randn(16, 1, 28, 28)
+        labels = torch.randint(0, 10, (16,))
+        output = model(x)
+        loss = criterion(output, labels)
+        assert loss.item() > 0
+        assert not torch.isnan(loss)
+
+    def test_backward_pass(self):
+        model = CNN(num_classes=10)
+        criterion = nn.CrossEntropyLoss()
+        optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
+
+        x = torch.randn(16, 1, 28, 28)
+        labels = torch.randint(0, 10, (16,))
+
+        # Forward
+        output = model(x)
+        loss = criterion(output, labels)
+
+        # Backward
+        optimizer.zero_grad()
+        loss.backward()
+        optimizer.step()
+
+        # Verify gradients were computed
+        for param in model.parameters():
+            if param.requires_grad:
+                assert param.grad is not None
