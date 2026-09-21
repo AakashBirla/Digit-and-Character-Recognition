@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Handwritten Digit & Character Recognition</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Digit & Character Recognition</h1>
+            <p>Draw a digit (0-9) or character (A-Z, a-z) in the box below and click Predict.</p>
+        </header>
+
+        <div class="main-content">
+            <div class="drawing-section">
+                <div class="controls">
+                    <label for="model-select">Select Model:</label>
+                    <select id="model-select">
+                        <option value="CNN - EMNIST (Characters A-Z, a-z, 0-9)">CNN - EMNIST (Characters A-Z, a-z, 0-9)</option>
+                        <option value="CNN - MNIST (Digits 0-9)">CNN - MNIST (Digits 0-9)</option>
+                        <option value="MLP - MNIST (Digits 0-9)">MLP - MNIST (Digits 0-9)</option>
+                    </select>
+                </div>
+                
+                <!-- Canvas is styled to have black background, we will draw in white -->
+                <canvas id="paint-canvas" width="400" height="400"></canvas>
+                
+                <div class="buttons">
+                    <button id="clear-btn" class="btn secondary">Clear Canvas</button>
+                    <button id="predict-btn" class="btn primary">Predict</button>
+                </div>
+            </div>
+
+            <div class="results-section">
+                <h2>Top 3 Predictions</h2>
+                <div id="prediction-results" class="results-box">
+                    <p class="placeholder-text">Draw a character and click Predict to see the results.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>

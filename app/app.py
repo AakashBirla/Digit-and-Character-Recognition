@@ -1,19 +1,22 @@
 #!/usr/bin/env python3
-"""Stage 5: Real-time drawing and recognition interface.
+"""Stage 5: Real-time drawing and recognition interface (Flask).
 
-Provides a Gradio web interface for users to draw digits and characters
+Provides a Flask web interface for users to draw digits and characters
 and get real-time predictions from the trained models.
 
 Usage:
     python app/app.py
 """
 
+import base64
+import io
 import logging
 import sys
 from pathlib import Path
 
-import gradio as gr
+from flask import Flask, jsonify, render_template, request
 import torch
+from PIL import Image
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
@@ -29,6 +32,9 @@ logging.basicConfig(
     datefmt="%H:%M:%S",
 )
 logger = logging.getLogger(__name__)
+
+# Initialize Flask app
+app = Flask(__name__)
 
 # Paths to models
 CHECKPOINT_DIR = PROJECT_ROOT / "checkpoints"
@@ -60,7 +66,10 @@ def load_model(model_name: str) -> tuple[torch.nn.Module, dict, bool]:
     if model_name in loaded_models:
         return loaded_models[model_name]
         
-    config = MODELS[model_name]
+    config = MODELS.get(model_name)
+    if not config:
+        raise ValueError(f"Unknown model: {model_name}")
+        
     checkpoint_path = config["path"]
     
     if not checkpoint_path.exists():
@@ -88,42 +97,43 @@ def load_model(model_name: str) -> tuple[torch.nn.Module, dict, bool]:
     return loaded_models[model_name]
 
 
-def predict(image, model_name):
-    """Predict the character drawn on the image canvas."""
-    if image is None:
-        return "Please draw something first!"
-    
-    print(f"Received image type: {type(image)}")
-    
-    # Gradio sketchpad returns a dict with 'composite' key containing the RGBA image
-    if isinstance(image, dict):
-        print(f"Image keys: {image.keys()}")
-        if "composite" in image:
-            img_array = image["composite"]
-        elif "background" in image and "layers" in image:
-            # Fallback for some Gradio versions
-            img_array = image["layers"][0] if image["layers"] else image["background"]
-        else:
-            # Grab whatever looks like a numpy array
-            img_array = next(iter(image.values()))
-    else:
-        img_array = image
+@app.route("/")
+def index():
+    """Render the main drawing page."""
+    return render_template("index.html")
+
+
+@app.route("/predict", methods=["POST"])
+def predict():
+    """Handle prediction requests from the frontend."""
+    data = request.json
+    if not data or "image" not in data or "model" not in data:
+        return jsonify({"error": "Invalid request parameters"}), 400
         
-    print(f"Final img_array shape: {img_array.shape}, dtype: {img_array.dtype}")
+    image_b64 = data["image"]
+    model_name = data["model"]
     
-    # Check if empty drawing (all transparent or white)
-    import numpy as np
-    if np.sum(img_array) == 0 or np.all(img_array == 255):
-        return "Canvas is empty!"
-        
+    # Decode base64 image
+    try:
+        if "," in image_b64:
+            image_b64 = image_b64.split(",")[1]
+        image_bytes = base64.b64decode(image_b64)
+        image = Image.open(io.BytesIO(image_bytes))
+    except Exception as e:
+        logger.error(f"Image decode error: {e}")
+        return jsonify({"error": "Failed to decode image"}), 400
+
+    # Load model
     try:
         model, class_mapping, is_emnist = load_model(model_name)
-    except FileNotFoundError as e:
-        return f"Error: Model file not found. Have you trained {model_name}?"
-        
+    except Exception as e:
+        logger.error(f"Model load error: {e}")
+        return jsonify({"error": str(e)}), 500
+
+    # Preprocess and predict
     try:
         # Preprocess the drawing
-        tensor = preprocess_drawing(img_array, is_emnist=is_emnist)
+        tensor = preprocess_drawing(image, is_emnist=is_emnist)
         tensor = tensor.to(device)
         
         # Predict
@@ -137,77 +147,24 @@ def predict(image, model_name):
         top_prob = top_prob.cpu().numpy()
         top_class = top_class.cpu().numpy()
         
-        result = ""
+        predictions = []
         for i in range(3):
             char = class_mapping[top_class[i]]
-            prob = top_prob[i] * 100
-            result += f"{i+1}. Predicted Character: '{char}' (Confidence: {prob:.2f}%)\n"
+            prob = float(top_prob[i] * 100)
+            predictions.append({
+                "char": char,
+                "prob": prob
+            })
             
-        return result
+        return jsonify({"predictions": predictions})
         
     except Exception as e:
         logger.error(f"Prediction error: {e}")
-        return f"Error processing image: {e}"
-
-
-def create_app():
-    """Create and configure the Gradio app."""
-    
-    with gr.Blocks(title="Handwritten Digit & Character Recognition") as app:
-        gr.Markdown("# Handwritten Digit & Character Recognition")
-        gr.Markdown(
-            "Draw a digit (0-9) or character (A-Z) in the box below, "
-            "select a model, and click **Predict**."
-        )
-        
-        with gr.Row():
-            with gr.Column(scale=1):
-                # Sketchpad for drawing
-                canvas = gr.Sketchpad(
-                    label="Draw Here",
-                    type="numpy",
-                    height=500,
-                    width=500,
-                    layers=False,
-                    brush=gr.Brush(colors=["#FFFFFF"])
-                )
-                
-                model_selector = gr.Dropdown(
-                    choices=list(MODELS.keys()),
-                    value="CNN - EMNIST (Characters A-Z, a-z, 0-9)",
-                    label="Select Model"
-                )
-                
-                with gr.Row():
-                    clear_btn = gr.Button("Clear")
-                    predict_btn = gr.Button("Predict", variant="primary")
-                    
-            with gr.Column(scale=1):
-                output_text = gr.Textbox(
-                    label="Top 3 Predictions",
-                    lines=5,
-                    interactive=False
-                )
-                
-        # Handle button clicks
-        predict_btn.click(
-            fn=predict,
-            inputs=[canvas, model_selector],
-            outputs=output_text
-        )
-        
-        # We need a small JS script to actually clear the sketchpad widget in Gradio
-        clear_btn.click(
-            fn=lambda: None,
-            inputs=None,
-            outputs=canvas
-        )
-        
-    return app
+        return jsonify({"error": f"Error processing image: {e}"}), 500
 
 
 if __name__ == "__main__":
-    logger.info("Starting up Real-time Drawing App...")
+    logger.info("Starting up Real-time Drawing App (Flask)...")
     
     # Pre-load the default model to fail fast if it doesn't exist
     try:
@@ -216,5 +173,5 @@ if __name__ == "__main__":
     except Exception as e:
         logger.warning(f"Could not pre-load model: {e}")
         
-    app = create_app()
-    app.launch(share=False, server_name="127.0.0.1", server_port=7860)
+    # Start Flask server
+    app.run(host="127.0.0.1", port=5000, debug=True)

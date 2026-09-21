@@ -1,0 +1,169 @@
+:root {
+    --primary-color: #4f46e5;
+    --primary-hover: #4338ca;
+    --bg-color: #f3f4f6;
+    --card-bg: #ffffff;
+    --text-main: #1f2937;
+    --text-muted: #6b7280;
+    --border-color: #e5e7eb;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-main);
+    line-height: 1.5;
+}
+
+.container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+header h1 {
+    font-size: 2.5rem;
+    color: var(--text-main);
+    margin-bottom: 0.5rem;
+}
+
+header p {
+    color: var(--text-muted);
+    font-size: 1.1rem;
+}
+
+.main-content {
+    display: flex;
+    gap: 2rem;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.drawing-section, .results-section {
+    background-color: var(--card-bg);
+    padding: 1.5rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    flex: 1;
+    min-width: 350px;
+    display: flex;
+    flex-direction: column;
+}
+
+.controls {
+    margin-bottom: 1rem;
+}
+
+.controls label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+select {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    font-size: 1rem;
+    background-color: #f9fafb;
+}
+
+/* Canvas styling: Black background because model expects white digit on black bg */
+canvas {
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    cursor: crosshair;
+    background-color: black;
+    margin: 0 auto;
+    display: block;
+}
+
+.buttons {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.btn {
+    flex: 1;
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 6px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.btn.primary {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.btn.primary:hover {
+    background-color: var(--primary-hover);
+}
+
+.btn.secondary {
+    background-color: #e5e7eb;
+    color: var(--text-main);
+}
+
+.btn.secondary:hover {
+    background-color: #d1d5db;
+}
+
+.results-section h2 {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.results-box {
+    flex: 1;
+    background-color: #f9fafb;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 1rem;
+    font-size: 1.1rem;
+}
+
+.placeholder-text {
+    color: var(--text-muted);
+    text-align: center;
+    margin-top: 2rem;
+}
+
+.prediction-item {
+    padding: 0.75rem;
+    margin-bottom: 0.5rem;
+    background-color: white;
+    border-radius: 6px;
+    border-left: 4px solid var(--primary-color);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.prediction-char {
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+.prediction-prob {
+    color: var(--text-muted);
+}

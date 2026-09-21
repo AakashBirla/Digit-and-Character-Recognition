@@ -267,13 +267,13 @@ The evaluation pipeline loads a trained model from a checkpoint and runs inferen
 ### How to Run the App
 
 ```bash
-# Launch the Gradio web interface
+# Launch the Flask web interface
 python app/app.py
 ```
 
 ### Features
-- Interactive sketchpad to draw digits or characters
-- Real-time prediction with top-3 confidence scores
+- Interactive HTML5 canvas to draw digits or characters
+- Real-time prediction with top-3 confidence scores via REST API
 - Model selection dropdown (compare MLP vs CNN, or MNIST vs EMNIST)
 - Custom preprocessing pipeline (auto-cropping, padding, scaling, background inversion)
 
