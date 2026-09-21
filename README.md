@@ -11,9 +11,10 @@ A complete handwritten digit and character recognition system built from scratch
 - ✅ Dataset analysis and visualization utilities
 - ✅ Reproducible experiments with seed management
 - ✅ Automatic GPU/MPS/CPU device detection
-- 🔲 MLP baseline classifier (Stage 2)
+- ✅ MLP baseline classifier with training pipeline
+- ✅ Training/validation loops with checkpointing
 - 🔲 CNN classifier (Stage 3)
-- 🔲 Training pipeline with metrics (Stage 4)
+- 🔲 Full training pipeline with metrics (Stage 4)
 - 🔲 Real-time drawing interface (Stage 5)
 
 ## Project Structure
@@ -140,12 +141,58 @@ Plots are saved to `results/figures/`:
 - `mnist_batch_samples.png` — Sample batch from DataLoader
 - `mnist_pixel_distribution.png` — Pixel intensity histogram
 
+## Stage 2: MLP Baseline Classifier
+
+### MLP Architecture
+
+```text
+Input (28×28)
+     ↓
+Flatten (784)
+     ↓
+Linear(784, 256) → ReLU → Dropout(0.2)
+     ↓
+Linear(256, 128) → ReLU → Dropout(0.2)
+     ↓
+Linear(128, num_classes)
+```
+
+- **Parameters**: ~235K trainable
+- **Loss**: CrossEntropyLoss
+- **Optimizer**: Adam (lr=0.001)
+- Supports configurable `num_classes` (10 for MNIST, 47 for EMNIST)
+
+### How to Run
+
+```bash
+# Train MLP on MNIST (10 epochs)
+python train_mlp.py --epochs 10 --batch-size 64 --lr 0.001
+```
+
+### Results (MNIST)
+
+| Metric | Value |
+|---|---|
+| Best Val Accuracy | 98.02% |
+| Best Epoch | 8 / 10 |
+| Training Time | 48.1s |
+
+### Limitations
+
+The MLP is a **baseline** — it has inherent limitations for image data:
+- Treats each pixel independently with no spatial awareness
+- Loses 2D structure by flattening to a 1D vector
+- Not translation-invariant
+- More parameters than necessary
+
+**CNNs (Stage 3) address these limitations** by using convolutional filters that exploit spatial structure, weight sharing, and local connectivity.
+
 ## Project Evolution
 
 | Stage | Description | Status |
 |---|---|---|
 | **Stage 1** | MNIST/EMNIST data pipeline and visualization | ✅ Complete |
-| **Stage 2** | MLP baseline classifier | 🔲 Pending |
+| **Stage 2** | MLP baseline classifier | ✅ Complete |
 | **Stage 3** | CNN digit and character classifier | 🔲 Pending |
 | **Stage 4** | Training pipeline and evaluation metrics | 🔲 Pending |
 | **Stage 5** | Real-time drawing recognition app | 🔲 Pending |
