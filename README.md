@@ -15,7 +15,7 @@ A complete handwritten digit and character recognition system built from scratch
 - ✅ Training/validation loops with checkpointing
 - ✅ CNN digit and character classifier
 - ✅ Full training pipeline with evaluation metrics
-- 🔲 Real-time drawing interface (Stage 5)
+- ✅ Real-time drawing and inference web application
 
 ## Project Structure
 
@@ -262,6 +262,21 @@ The evaluation pipeline loads a trained model from a checkpoint and runs inferen
 - **Classification Report**: Precision, recall, and F1-score for each class (saved to `results/metrics/`)
 - **Confusion Matrix**: A heatmap visualization of true vs. predicted labels (saved to `results/figures/`)
 
+## Stage 5: Real-time Drawing Application
+
+### How to Run the App
+
+```bash
+# Launch the Gradio web interface
+python app/app.py
+```
+
+### Features
+- Interactive sketchpad to draw digits or characters
+- Real-time prediction with top-3 confidence scores
+- Model selection dropdown (compare MLP vs CNN, or MNIST vs EMNIST)
+- Custom preprocessing pipeline (auto-cropping, padding, scaling, background inversion)
+
 ## Project Evolution
 
 | Stage | Description | Status |
@@ -270,7 +285,7 @@ The evaluation pipeline loads a trained model from a checkpoint and runs inferen
 | **Stage 2** | MLP baseline classifier | ✅ Complete |
 | **Stage 3** | CNN digit and character classifier | ✅ Complete |
 | **Stage 4** | Training pipeline and evaluation metrics | ✅ Complete |
-| **Stage 5** | Real-time drawing recognition app | 🔲 Pending |
+| **Stage 5** | Real-time drawing recognition app | ✅ Complete |
 
 ## Technology Stack
 

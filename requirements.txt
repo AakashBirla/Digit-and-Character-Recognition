@@ -8,3 +8,6 @@ pandas>=2.0.0
 scikit-learn>=1.2.0
 tqdm>=4.65.0
 seaborn==0.13.2
+gradio==6.28.0
+gradio_client==2.7.1
+hf-gradio==0.4.1
