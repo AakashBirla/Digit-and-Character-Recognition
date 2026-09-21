@@ -154,9 +154,8 @@ def create_app():
                 canvas = gr.Sketchpad(
                     label="Draw Here",
                     type="numpy",
-                    crop_size=(280, 280),
                     layers=False,
-                    brush=gr.Brush(colors=["#FFFFFF"], thickness=20)
+                    brush=gr.Brush(colors=["#FFFFFF"])
                 )
                 
                 model_selector = gr.Dropdown(
