@@ -23,16 +23,25 @@ def preprocess_drawing(image: np.ndarray | Image.Image, is_emnist: bool = False)
     if isinstance(image, Image.Image):
         # Convert PIL to numpy array
         if image.mode == 'RGBA':
-            # Extract alpha channel if RGBA (drawing is usually in alpha for transparent backgrounds)
-            img = np.array(image)[:, :, 3]
+            # Check if image actually has transparent pixels
+            alpha = np.array(image)[:, :, 3]
+            if np.min(alpha) < 255:
+                # It has transparent areas (like Gradio sketchpad), use alpha as the drawing
+                img = alpha
+            else:
+                # Opaque image (like our Flask canvas), convert to grayscale
+                img = np.array(image.convert("L"))
         else:
             img = np.array(image.convert("L"))
     else:
         # Assume it's an OpenCV/Numpy image
         if len(image.shape) == 3:
             if image.shape[2] == 4:
-                # RGBA image from Gradio - use alpha channel
-                img = image[:, :, 3]
+                alpha = image[:, :, 3]
+                if np.min(alpha) < 255:
+                    img = alpha
+                else:
+                    img = cv2.cvtColor(image, cv2.COLOR_RGBA2GRAY)
             elif image.shape[2] == 3:
                 # RGB/BGR image
                 img = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)

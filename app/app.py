@@ -134,6 +134,12 @@ def predict():
     try:
         # Preprocess the drawing
         tensor = preprocess_drawing(image, is_emnist=is_emnist)
+        logger.info(f"Processed tensor shape: {tensor.shape}, non-zero pixels: {torch.count_nonzero(tensor).item()}")
+        
+        # Check if the tensor is entirely empty
+        if torch.count_nonzero(tensor).item() == 0 or torch.allclose(tensor, torch.min(tensor)):
+            return jsonify({"error": "Canvas is empty!"}), 400
+            
         tensor = tensor.to(device)
         
         # Predict
