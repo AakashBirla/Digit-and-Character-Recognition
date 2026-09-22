@@ -24,13 +24,14 @@ class TestPreprocessing:
         img = np.zeros((100, 100), dtype=np.uint8)
         img[30:70, 30:70] = 255
         
-        tensor = preprocess_drawing(img, is_emnist=False)
+        tensor = preprocess_drawing(img)
+        
         assert tensor.shape == (1, 1, 28, 28)
         assert isinstance(tensor, torch.Tensor)
 
     def test_preprocess_pil_image(self):
         img = Image.new('L', (100, 100), color=0)
-        tensor = preprocess_drawing(img, is_emnist=True)
+        tensor = preprocess_drawing(img)
         assert tensor.shape == (1, 1, 28, 28)
         
     def test_preprocess_inverts_white_background(self):

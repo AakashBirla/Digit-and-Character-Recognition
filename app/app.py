@@ -91,9 +91,7 @@ def load_model(model_name: str) -> tuple[torch.nn.Module, dict, bool]:
     model.to(device)
     model.eval()
     
-    is_emnist = config["dataset"] == "emnist"
-    
-    loaded_models[model_name] = (model, class_mapping, is_emnist)
+    loaded_models[model_name] = (model, class_mapping)
     return loaded_models[model_name]
 
 
@@ -125,7 +123,7 @@ def predict():
 
     # Load model
     try:
-        model, class_mapping, is_emnist = load_model(model_name)
+        model, class_mapping = load_model(model_name)
     except Exception as e:
         logger.error(f"Model load error: {e}")
         return jsonify({"error": str(e)}), 500
@@ -133,7 +131,7 @@ def predict():
     # Preprocess and predict
     try:
         # Preprocess the drawing
-        tensor = preprocess_drawing(image, is_emnist=is_emnist)
+        tensor = preprocess_drawing(image)
         logger.info(f"Processed tensor shape: {tensor.shape}, non-zero pixels: {torch.count_nonzero(tensor).item()}")
         
         # Check if the tensor is entirely empty

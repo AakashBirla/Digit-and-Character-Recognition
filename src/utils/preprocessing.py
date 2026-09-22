@@ -10,12 +10,11 @@ import torch
 from PIL import Image
 import torchvision.transforms as transforms
 
-def preprocess_drawing(image: np.ndarray | Image.Image, is_emnist: bool = False) -> torch.Tensor:
+def preprocess_drawing(image: np.ndarray | Image.Image) -> torch.Tensor:
     """Preprocess a drawing (black background, white stroke or vice-versa) into a model-ready tensor.
 
     Args:
         image: Input image (numpy array or PIL Image).
-        is_emnist: Whether to apply EMNIST-specific transpose (rotation/flip).
 
     Returns:
         Tensor of shape (1, 1, 28, 28).
@@ -85,10 +84,6 @@ def preprocess_drawing(image: np.ndarray | Image.Image, is_emnist: bool = False)
 
     # Convert back to PIL for transforms
     pil_img = Image.fromarray(img)
-    
-    if is_emnist:
-        # EMNIST requires transpose
-        pil_img = pil_img.transpose(Image.TRANSPOSE)
 
     # Transform to tensor and normalize (MNIST/EMNIST stats)
     transform = transforms.Compose([
