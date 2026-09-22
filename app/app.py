@@ -134,6 +134,10 @@ def predict():
         tensor = preprocess_drawing(image)
         logger.info(f"Processed tensor shape: {tensor.shape}, non-zero pixels: {torch.count_nonzero(tensor).item()}")
         
+        # Save the tensor for debugging so the user can see what the model sees
+        import torchvision
+        torchvision.utils.save_image(tensor, str(PROJECT_ROOT / "latest_prediction.png"), normalize=True)
+        
         # Check if the tensor is entirely empty
         if torch.count_nonzero(tensor).item() == 0 or torch.allclose(tensor, torch.min(tensor)):
             return jsonify({"error": "Canvas is empty!"}), 400
